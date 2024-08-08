@@ -36,14 +36,14 @@ public class Main {
             int n = 10;
             AtomicInteger atomicInteger = new AtomicInteger(0);
             ExecutorService executorService = Executors.newFixedThreadPool(n);
-            var results = IntStream.rangeClosed(1, n)
+            List<Future<Long>> results = IntStream.rangeClosed(1, n)
                     .boxed()
-                    .map(i -> {
+                    .map(i -> executorService.submit(() -> {
                         var a = System.currentTimeMillis();
-                        var res = executorService.submit(() -> transactionService.callUnpaidTransactionsFunction());
+                        var res = transactionService.callUnpaidTransactionsFunction();
                         System.out.println("execution " + atomicInteger.incrementAndGet() + ": " + (System.currentTimeMillis() - a));
                         return res;
-                    })
+                    }))
                     .toList();
             ;
             waitForAllFutures(results);
@@ -54,8 +54,8 @@ public class Main {
             for (Future<Long> future : futures) {
                 try {
                     // Wait for the result and print it
-                    var result = future.get();
-//                    System.out.println("Result: " + result);
+                    var res = future.get();
+//                    System.out.println("Result: " + res);
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
