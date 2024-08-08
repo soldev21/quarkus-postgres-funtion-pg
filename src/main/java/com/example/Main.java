@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
 @QuarkusMain
@@ -35,22 +36,26 @@ public class Main {
         private void test() {
             int n = 100;
             AtomicInteger atomicInteger = new AtomicInteger(0);
+            AtomicLong sum = new AtomicLong(0);
             ExecutorService executorService = Executors.newFixedThreadPool(n);
             List<Future<Long>> results = IntStream.rangeClosed(1, n)
                     .boxed()
                     .map(i -> executorService.submit(() -> {
                         var a = System.currentTimeMillis();
                         var res = transactionService.callUnpaidTransactionsFunction();
-                        System.out.println("execution " + atomicInteger.incrementAndGet() + ": " + (System.currentTimeMillis() - a));
+                        var end = (System.currentTimeMillis() - a);
+                        System.out.println("execution " + atomicInteger.incrementAndGet() + ": " + end);
+                        sum.addAndGet(end);
                         return res;
                     }))
                     .toList();
             ;
-//            waitForAllFutures(results);
+            waitForAllFutures(results, sum, n);
             executorService.shutdown();
+
         }
 
-        public static void waitForAllFutures(List<Future<Long>> futures) {
+        public static void waitForAllFutures(List<Future<Long>> futures, AtomicLong sum, int n) {
             for (Future<Long> future : futures) {
                 try {
                     // Wait for the result and print it
@@ -60,6 +65,7 @@ public class Main {
                     e.printStackTrace();
                 }
             }
+            System.out.println("AVERAGE: "+ sum.get()/n);
         }
     }
 }
