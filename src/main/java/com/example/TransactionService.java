@@ -21,9 +21,7 @@ public class TransactionService {
 
     @Transactional
     public long callUnpaidTransactionsFunction() {
-        Session session = entityManager.unwrap(Session.class);
-        Transaction tx = session.beginTransaction();
-        Query<Long> query = session.createNativeQuery("select count(*) FROM public.get_unpaid_transactions(:param1, :param2, :param3, :param4, :param5, :param6, :param7, :param8, :param9)")
+        Query<Long> query = entityManager.createNativeQuery("select count(*) FROM public.get_unpaid_transactions(:param1, :param2, :param3, :param4, :param5, :param6, :param7, :param8, :param9)")
                 .unwrap(Query.class);
         var res = query.setParameter("param1", "unlocked")
                 .setParameter("param2", "locked")
@@ -35,8 +33,6 @@ public class TransactionService {
                 .setParameter("param8", null)
                 .setParameter("param9", null)
                 .getSingleResult();
-        session.flush();
-        tx.commit();
         return res;
 
     }

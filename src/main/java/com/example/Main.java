@@ -33,7 +33,7 @@ public class Main {
         }
 
         private void test() {
-            int n = 10;
+            int n = 100;
             AtomicInteger atomicInteger = new AtomicInteger(0);
             ExecutorService executorService = Executors.newFixedThreadPool(n);
             List<Future<Long>> results = IntStream.rangeClosed(1, n)
@@ -46,7 +46,7 @@ public class Main {
                     }))
                     .toList();
             ;
-            waitForAllFutures(results);
+//            waitForAllFutures(results);
             executorService.shutdown();
         }
 
